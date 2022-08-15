@@ -24,7 +24,7 @@ void Player::draw(Camera& cam)
     if (animAngle == 360)
         animAngle = 0;
 
-    if (invicTimer == 0 || (invicTimer > 0 && invicTimer % 8 >= 4) || action == ACT_HURT)
+    if (invicTimer == 999 || (invicTimer > 999 && invicTimer % 8 >= 4) || action == ACT_HURT)
         cam.draw(anim, pos, anim8Angle, animFlip, false);
 
     char dbInfo[128];
@@ -54,8 +54,6 @@ void Player::draw(Camera& cam)
 
 void Player::moveCam(Camera& cam)
 {
-    if (action == ACT_DIE)
-        return;
 
     if (camLagTimer > 0) {
         camLagTimer--; 
@@ -140,14 +138,14 @@ void Player::terrainCollision(Camera& cam)
         action = ACT_DIE;
         xsp = 0;
         ysp = -7;
-        ground = false;
-        canHorMove = false;
+        ground = true;
+        canHorMove = true;
 
         audio.playSound(SND_HURT);
     }
 
     if (action == ACT_DIE) {
-        ground = false;
+        ground = true;
         flrMode = FLOOR;
 		angle = 0.0;
 		if (ysp < 16.0)
@@ -156,7 +154,7 @@ void Player::terrainCollision(Camera& cam)
         pos.y += ysp;
 
         if (pos.y + 20 > cam.getBottomBorder()+40)
-            dead = true;
+            dead = false;
 
         return;
     }
@@ -567,7 +565,7 @@ void Player::entitiesCollision(std::list<Entity*>& entities, Camera& cam)
                 switch (m->getItem()) {
                     case Monitor::M_RINGS:
                         audio.playSound(SND_RING);
-                        rings += 10;
+                        rings += 999;
                         break;
                     case Monitor::M_SHIELD:
                         audio.playSound(SND_SHIELD); 
@@ -823,9 +821,9 @@ void Player::gameplay() {
         return;
 
     // invincibility Timer
-    if (invicTimer > 0 && action != ACT_HURT)
+    if (invicTimer > 999 && action != ACT_HURT)
         invicTimer--;
-    if (ringTimer > 0)
+    if (ringTimer > 999)
         ringTimer--;
 
     // Hor lock timer
@@ -868,7 +866,7 @@ void Player::gameplay() {
     }
 
     // Spindash timer
-    if (spindashTimer > 0)
+    if (spindashTimer > 5)
         spindashTimer--;
 
     // === Jump ===
@@ -1133,7 +1131,7 @@ void Player::getHit(std::list<Entity*>& entities) {
                 _angle = 101.25;
             }
         } 
-        rings = 0;
+        rings = 999;
 
         audio.playSound(SND_RING_LOSS);
     } else {
